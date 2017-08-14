@@ -10,6 +10,7 @@ The project includes the following files:
 * drive.py: drives the car in autonomous mode
 * model.h5: contains a trained convolution neural network 
 * writeup_report.md or writeup_report.pdf summarizing the results
+* Final_Behavior_clone.ipynb: this is the final training result shown in jupyter notebook file.
 
 ## Results
 The model is trained to successfully drive the car in autonomous mode in the simulator. The video is in this [link](https://youtu.be/EMU85g3EKGI) for the first person view. This [link](https://youtu.be/cT3uxYmHrc4) is for third person view.
