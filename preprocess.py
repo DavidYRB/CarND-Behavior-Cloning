@@ -16,10 +16,9 @@ with open('./driving_log.csv') as csvfile:
 # plt.show()
 
 # change the size and normalize the image data
-def change_size_and_normalize(image, new_row, new_col):
+def change_size(image, new_row, new_col):
 	image = cv2.resize(image, (new_col, new_row), interpolation=cv2.INTER_AREA)
-	new_image = image/122.5 - 1
-	return new_image
+	return image
 
 # cropping the image data to only focus on the path
 def cropping(image, top_perc=0.40, bot_perc=0.12):
@@ -79,22 +78,18 @@ def preprocess_img(line, new_row, new_col, correction):
 
     image = brightness_change(image)
 
-    image, angle = translation(image, angle, 100)
+    #image, angle = translation(image, angle, 100)
 
-    image = change_size_and_normalize(image, new_row, new_col)
+    image = change_size(image, new_row, new_col)
     
     image, angle = flipping(image, angle)
     
     return image, angle
 
 # Generator 
-def generator(lines, new_row, new_col, BATCH_SIZE = 64):
+def generator(lines, new_row, new_col, bias_threshold, BATCH_SIZE = 64):
     batch_img = np.zeros((BATCH_SIZE, new_row, new_col, 3))
     batch_ang = np.zeros(BATCH_SIZE)
-    bias_threshold_1 = 0.9
-    bias_threshold_2 = 0.6
-    angle_threshold_1 = 0.1
-    angle_threshold_2 = 0.7
     # infinite loop for generating data batches
     while 1:
         for i in range(BATCH_SIZE):
@@ -103,21 +98,15 @@ def generator(lines, new_row, new_col, BATCH_SIZE = 64):
                 line = lines[np.random.randint(len(lines))]
                 temp_img, temp_ang = preprocess_img(line, new_row,new_col,0.229)
         
-                if abs(temp_ang) < angle_threshold_1:
+                if abs(temp_ang) < 0.25:
                     rand_prob = np.random.uniform()
-                       # print(temp_ang, rand_prob)
-                    if rand_prob > bias_threshold_1:
-                        batch_img[i], batch_ang[i] = temp_img, temp_ang
-                        keep_pro = 1
-                elif abs(temp_ang)<angle_threshold_2:
-                    rand_prob = np.random.uniform()
-            # print(temp_ang, rand_prob)
-                    if rand_prob > bias_threshold_2:
+                   # print(temp_ang, rand_prob)
+                    if rand_prob > bias_threshold:
                         batch_img[i], batch_ang[i] = temp_img, temp_ang
                         keep_pro = 1
                 else:
                     batch_img[i], batch_ang[i] = temp_img, temp_ang
                     keep_pro = 1
+                    
+       	yield (batch_img, batch_ang) 
 
-        #print(batch_img, batch_ang)
-        yield (batch_img, batch_ang)
